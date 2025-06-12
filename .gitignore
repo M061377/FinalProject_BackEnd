@@ -1,0 +1,11 @@
+venv/
+.venv/
+myenv/
+scripts/kobart_finetuned/
+scripts/kobert-finetuned-emotion-v4/
+data/
+
+__pycache__/
+*.pyc
+.vscode/
+.DS_Store

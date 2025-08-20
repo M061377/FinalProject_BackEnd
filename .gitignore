@@ -19,3 +19,5 @@ models/myenv/
 venv/
 .venv/
 models/kluebert-finetuned
+Backend/firebase_key.json
+Backend/models/

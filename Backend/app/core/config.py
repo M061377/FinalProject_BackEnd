@@ -17,7 +17,9 @@ KLUEBERT_DIR = os.getenv("KLUEBERT_DIR", str(MODELS_DIR / "kluebert-finetuned"))
 SBERT_DIR = os.getenv("SBERT_DIR", str(MODELS_DIR / "sbert"))
 
 # Firebase 서비스 계정 파일 경로
-FIREBASE_CRED_JSON = os.getenv("FIREBASE_CRED_JSON", str(ROOT.parent / "firebase_key.json"))
+FIREBASE_CRED_JSON = os.getenv(
+    "FIREBASE_CRED_JSON", str(ROOT.parent / "firebase_key.json")
+)
 
 # 데이터 파일 경로 설정
 EMBEDDING_PKL_PATH = os.getenv(
@@ -32,6 +34,8 @@ KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
 if not KAKAO_REST_API_KEY:
     raise ValueError("KAKAO_REST_API_KEY 환경 변수가 설정되지 않았습니다.")
 
+# 카카오 Admin Key (unlink용)
+KAKAO_ADMIN_KEY = os.getenv("KAKAO_ADMIN_KEY")
+
 # 텐서플로우/토치 등에서 사용할 디바이스 설정
 DEVICE = "cuda" if os.getenv("USE_CUDA", "0") == "1" else "cpu"
-

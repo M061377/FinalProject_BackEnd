@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import credentials
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 # config.py 모듈에서 설정 변수들을 임포트합니다.
 from app.core.config import FIREBASE_CRED_JSON
@@ -11,7 +12,9 @@ from app.core.config import FIREBASE_CRED_JSON
 # Firebase 앱 초기화
 try:
     # config.py에 정의된 변수를 사용하여 서비스 계정 파일 경로를 가져옵니다.
-    print(f"Firebase 서비스 계정 파일 경로: {FIREBASE_CRED_JSON}") # 경로를 출력하여 확인
+    print(
+        f"Firebase 서비스 계정 파일 경로: {FIREBASE_CRED_JSON}"
+    )  # 경로를 출력하여 확인
     cred = credentials.Certificate(FIREBASE_CRED_JSON)
     firebase_admin.initialize_app(cred)
     print("Firebase Admin SDK가 성공적으로 초기화되었습니다.")
@@ -23,7 +26,33 @@ except Exception as e:
     exit(1)
 
 # FastAPI 앱 생성
-app = FastAPI()
+app = FastAPI(title="Backend API", version="1.0.0")
+
+
+# 🔑 Swagger에 JWT 보안 스키마 추가 (Authorize 버튼 보이게)
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    for path in openapi_schema["paths"].values():
+        for method in path.values():
+            method.setdefault("security", [{"bearerAuth": []}])
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 # CORS 미들웨어 설정
 app.add_middleware(

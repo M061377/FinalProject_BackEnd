@@ -9,10 +9,14 @@ _db = None
 
 def get_db():
     global _db
-    if _db is None:
+    if _db is not None:
+        return _db
+    try:
+        app = firebase_admin.get_app()  # 이미 초기화된 앱 있으면 재사용
+    except ValueError:
         cred = credentials.Certificate(str(FIREBASE_CRED_JSON))
-        firebase_admin.initialize_app(cred)
-        _db = firestore.client()
+        app = firebase_admin.initialize_app(cred)
+    _db = firestore.client(app)
     return _db
 
 

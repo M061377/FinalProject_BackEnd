@@ -11,6 +11,6 @@ class RecommendRequest(BaseModel):
     query: str
 
 
-@router.post("/v1/recommend_cached")
+@router.post("/recommend_cached")  # ✅ 중복 제거
 async def recommend_books(request: RecommendRequest):
     return await recommend_cached.get_recommendations(request.query)

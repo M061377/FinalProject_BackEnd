@@ -8,78 +8,117 @@ from app.utils.firebase_util import get_book_by_isbn
 
 
 async def get_recommendations(query: str):
-    # 1. 쿼리 감정 분류
+    # --- 0) 하이퍼파라미터
+    TOPK = 10
+    TH_STRONG = 0.6
+    TH_WEAK = 0.4
+
+    # 1) 쿼리 감정/임베딩
     query_emotion, confidence = classify(query)
     query_embedding = encode(query)
 
-    # 2. emotion_isbn.json에서 ISBN 목록 가져오기
+    # 2) 감정으로 ISBN 후보
     isbns = get_isbns_for_emotion(query_emotion)
     if not isbns:
+        # 프론트가 리스트 중간 공지를 쓰도록 items에도 notice 형태를 넣어줌
         return {
             "query": query,
             "query_emotion": query_emotion,
-            "items": [],
-            "message": "해당 감정에 맞는 책이 없습니다.",
+            "items": [
+                {
+                    "kind": "notice",
+                    "level": "info",
+                    "text": "해당 감정에 맞는 책이 없습니다.",
+                }
+            ],
+            "message": "해당 감정에 맞는 책이 없습니다.",  # (하위 호환)
         }
 
-    # 3. 임베딩 로드
+    # 3) 임베딩 로드
     embedding_dict = load_embeddings()
 
-    # 4. 유사도 계산
-    similarities = []
+    # 4) 코사인 유사도
+    sims = []
     for isbn in isbns:
-        if isbn not in embedding_dict:
+        vec = embedding_dict.get(isbn)
+        if vec is None:
             continue
-        book_vec = embedding_dict[isbn]
         sim = float(
-            np.dot(query_embedding, book_vec)
-            / (np.linalg.norm(query_embedding) * np.linalg.norm(book_vec))
+            np.dot(query_embedding, vec)
+            / (np.linalg.norm(query_embedding) * np.linalg.norm(vec))
         )
-        similarities.append((isbn, sim))
+        sims.append((isbn, sim))
 
-    # 5. 유사도 정렬
-    similarities.sort(key=lambda x: x[1], reverse=True)
+    # 5) 정렬
+    sims.sort(key=lambda x: x[1], reverse=True)
 
-    # 6. 필터링 로직
-    strong_matches = [(i, s) for i, s in similarities if s >= 0.6]
-    all_matches = strong_matches.copy()
+    # 6) 강/약 매칭 분리
+    strong = [(i, s) for i, s in sims if s >= TH_STRONG]
+    weak = [(i, s) for i, s in sims if TH_WEAK <= s < TH_STRONG]
 
-    warning = None
-    message = None
-
-    if len(strong_matches) < 10:
-        weak_matches = [(i, s) for i, s in similarities if 0.4 <= s < 0.6]
-        if weak_matches:  # 유사도 0.6 미만 책을 포함하기 시작할 때만 warning
-            warning = "결과의 정확도가 떨어질 수 있습니다."
-        all_matches.extend(weak_matches)
-
-    if len(all_matches) < 10:
-        message = "유사한 책이 부족합니다."
-
-    # 7. 최종 상위 10권 ISBN
-    final = all_matches[:10]
-
-    # 8. Firebase에서 책 정보 가져오기
-    items = []
-    for isbn, sim in final:
+    # 7) 책 정보 빌더
+    def _to_book_item(isbn: str, sim: float):
         book = get_book_by_isbn(isbn)
         if not book:
-            continue
+            return None
+        return {
+            "kind": "book",
+            "isbn13": book.get("isbn13", isbn),
+            "title": book.get("title", ""),
+            "categoryName": book.get("categoryName", ""),
+            "description": book.get("description", ""),
+            "similarity": round(sim, 4),
+        }
+
+    # 8) items 구성 (중간 공지 삽입)
+    items = []
+
+    # 8-1) 강한 매칭 먼저 채우기
+    for isbn, sim in strong:
+        if len(items) >= TOPK:
+            break
+        book_item = _to_book_item(isbn, sim)
+        if book_item:
+            items.append(book_item)
+
+    # 8-2) 약한 매칭을 붙이기 시작하는 순간, 경고 notice를 "강→약" 경계에 삽입
+    warning_inserted = False
+    if len(items) < TOPK and weak:
+        # 경고 notice (중간 삽입)
         items.append(
             {
-                "isbn13": book.get("isbn13", isbn),
-                "title": book.get("title", ""),
-                "categoryName": book.get("categoryName", ""),
-                "description": book.get("description", ""),
-                "similarity": round(sim, 4),
+                "kind": "notice",
+                "level": "warning",
+                "text": "결과의 정확도가 떨어질 수 있습니다.",
             }
         )
+        warning_inserted = True
 
-    # 9. 최종 응답 dict를 순서대로 구성
-    result = {"query": query, "query_emotion": query_emotion, "items": items}
-    if warning:
-        result["warning"] = warning
-    if message:
-        result["message"] = message  # 항상 마지막에 들어가도록 순서 제어
+        # 이제 약한 매칭으로 채움
+        for isbn, sim in weak:
+            if len(items) >= TOPK:
+                break
+            book_item = _to_book_item(isbn, sim)
+            if book_item:
+                items.append(book_item)
+
+    # 8-3) 최종 개수가 부족하면 리스트 "끝"에 부족 notice 삽입
+    not_enough_inserted = False
+    if len([x for x in items if x.get("kind") == "book"]) < TOPK:
+        items.append(
+            {"kind": "notice", "level": "info", "text": "유사한 책이 부족합니다."}
+        )
+        not_enough_inserted = True
+
+    # 9) (하위 호환) 기존 warning/message 필드도 넣어주기
+    result = {
+        "query": query,
+        "query_emotion": query_emotion,
+        "items": items,
+    }
+    if warning_inserted:
+        result["warning"] = "결과의 정확도가 떨어질 수 있습니다."
+    if not_enough_inserted:
+        result["message"] = "유사한 책이 부족합니다."
 
     return result

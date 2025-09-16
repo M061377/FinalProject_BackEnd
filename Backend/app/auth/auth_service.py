@@ -1,18 +1,17 @@
 # app/auth/auth_service.py (전체 내용)
 
 import firebase_admin
-from firebase_admin import auth, exceptions, firestore
+from firebase_admin import auth, exceptions
 from firebase_admin.auth import UserNotFoundError
 from fastapi import HTTPException
 import httpx
 
-# 카카오 REST API 키는 config 모듈에서 가져옵니다.
-from app.core.config import KAKAO_REST_API_KEY
-from app.core.config import KAKAO_ADMIN_KEY
+from app.core.config import KAKAO_REST_API_KEY, KAKAO_ADMIN_KEY
 from app.core.schemas import FirebaseTokenResponse
+from app.utils.firebase_util import get_db  # ✅ util 불러오기
 
-# Firestore 클라이언트 초기화
-db = firestore.client()
+# Firestore 클라이언트
+db = get_db()
 
 
 async def get_kakao_user_info(access_token: str):

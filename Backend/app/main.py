@@ -45,8 +45,8 @@ app.add_middleware(
 # 라우터 등록
 from app.auth.auth import router as auth_router
 from app.routes.analyze import router as analyze_router
-from app.routes.recommend_cached import router as recommend_cached_router
+from app.routes.recommend_router import router as recommend_cached_router
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(analyze_router, prefix="/v1", tags=["analyze"])
-app.include_router(recommend_cached_router, prefix="/v1", tags=["recommend_cached"])
+app.include_router(recommend_cached_router, prefix="/v1", tags=["recommend_router"])

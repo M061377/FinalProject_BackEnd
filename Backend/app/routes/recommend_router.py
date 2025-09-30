@@ -3,7 +3,6 @@ from fastapi import APIRouter, Query, HTTPException
 from app.services import recommend_service
 from app.core.schemas import (
     RecommendResponse,
-    BookDetail,  # === REMOVABLE: BOOK DETAIL API
 )  # ← 기존 schemas.py에 "추가"할 추천 스키마 사용
 
 router = APIRouter()
@@ -26,18 +25,3 @@ async def recommend_books(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# === REMOVABLE: BOOK DETAIL API (BEGIN) ===
-@router.get("/books/{isbn13}", response_model=BookDetail)
-async def get_book_detail(isbn13: str):
-    """
-    Firestore에 저장된 특정 ISBN13 책의 모든 정보를 반환합니다.
-    """
-    book = recommend_service.get_book_detail_all(isbn13)
-    if not book:
-        raise HTTPException(status_code=404, detail="해당 도서를 찾을 수 없습니다.")
-    return book
-
-
-# === REMOVABLE: BOOK DETAIL API (END) ===

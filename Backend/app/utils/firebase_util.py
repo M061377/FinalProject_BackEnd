@@ -91,28 +91,3 @@ def get_books_min_fields(isbn_list: List[str]) -> Dict[str, Dict]:
             }
 
     return result
-
-
-# === REMOVABLE: BOOK DETAIL API (BEGIN) ===
-# =========================
-# ✅ (추가) 상세: 문서 전체 반환
-# =========================
-def get_book_detail_all(isbn13: str) -> Optional[Dict]:
-    """
-    상세 페이지용: Firestore에 저장된 모든 필드를 그대로 반환합니다.
-    """
-    db = get_db()
-
-    # 1) 문서 ID가 isbn13인 경우
-    doc = db.collection("books").document(isbn13).get()
-    if doc.exists:
-        return doc.to_dict()
-
-    # 2) isbn13 필드로 저장된 경우
-    q = list(db.collection("books").where("isbn13", "==", isbn13).limit(1).stream())
-    if not q:
-        return None
-    return q[0].to_dict()
-
-
-# === REMOVABLE: BOOK DETAIL API (END) ===

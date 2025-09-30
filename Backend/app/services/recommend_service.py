@@ -10,12 +10,6 @@ from app.utils.emotion_cache import get_isbns_for_emotion  # 감정별 ISBN 후�
 # 🔧 유틸 모듈을 별칭으로 임포트해서 이름 충돌/섀도잉 방지
 import app.utils.firebase_util as fb
 
-from app.core.schemas import (
-    RecommendResponse,
-    RecommendItem,
-    BookDetail,
-)  # === REMOVABLE: BOOK DETAIL API
-
 MAX_TOTAL = 100  # 상위 100권 제한
 
 
@@ -95,22 +89,3 @@ async def get_recommendations_paginated(
         items=items,
     )
     return resp.model_dump()
-
-
-# === REMOVABLE: BOOK DETAIL API (BEGIN) ===
-def get_book_detail_all(isbn13: str) -> Optional[BookDetail]:
-    """
-    상세 페이지에서 사용할 전체 필드 반환.
-    """
-    data = get_book_detail_all_from_db(isbn13=isbn13)
-    if not data:
-        return None
-    return BookDetail(**data)
-
-
-# 🔧 유틸 호출은 항상 fb.접두어로 — 섀도잉/재귀 방지
-def get_book_detail_all_from_db(isbn13: str) -> Optional[Dict[str, Any]]:
-    return fb.get_book_detail_all(isbn13)
-
-
-# === REMOVABLE: BOOK DETAIL API (END) ==

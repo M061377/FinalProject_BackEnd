@@ -58,19 +58,3 @@ class RecommendResponse(BaseModel):
     page_size: int
     total_candidates: int
     items: list[RecommendItem]
-
-
-# === REMOVABLE: BOOK DETAIL API (BEGIN) ===
-class BookDetail(BaseModel):
-    isbn13: str
-    title: str
-    author: Optional[str] = ""
-    publisher: Optional[str] = ""
-    cover: Optional[str] = ""
-    description: Optional[str] = ""
-    categoryName: Optional[str] = ""  # Firestore에 저장된 값 그대로
-    emotion: Optional[str] = ""
-    link: Optional[str] = ""  # 알라딘 링크
-
-
-# === REMOVABLE: BOOK DETAIL API (END) ===

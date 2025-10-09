@@ -19,29 +19,6 @@ class ErrorResponse(BaseModel):
     error: dict
 
 
-# 회원가입 요청 시 필요한 데이터
-class UserSignup(BaseModel):
-    userEmail: str
-    userPW: str
-    userNickname: str  # 닉네임은 Firestore에 추가로 저장합니다.
-
-
-# 로그인 요청 시 필요한 데이터
-class UserLogin(BaseModel):
-    userEmail: str
-    userPW: str
-
-
-class FirebaseTokenResponse(BaseModel):
-    """
-    파이어베이스 토큰, UID, 그리고 사용자 이름을 포함한 응답 모델입니다.
-    """
-
-    firebase_token: str
-    uid: str
-    display_name: str
-
-
 class RecommendItem(BaseModel):
     isbn13: str
     title: str

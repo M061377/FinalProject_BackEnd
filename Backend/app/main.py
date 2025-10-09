@@ -17,16 +17,7 @@ def custom_openapi():
         version=app.version,
         routes=app.routes,
     )
-    openapi_schema["components"]["securitySchemes"] = {
-        "bearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-        }
-    }
-    for path in openapi_schema["paths"].values():
-        for method in path.values():
-            method.setdefault("security", [{"bearerAuth": []}])
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
@@ -43,10 +34,8 @@ app.add_middleware(
 )
 
 # 라우터 등록
-from app.auth.auth import router as auth_router
 from app.routes.analyze import router as analyze_router
 from app.routes.recommend_router import router as recommend_cached_router
 
-app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(analyze_router, prefix="/v1", tags=["analyze"])
 app.include_router(recommend_cached_router, prefix="/v1", tags=["recommend_router"])

@@ -31,8 +31,6 @@ EMOTION_ISBN_JSON = os.getenv(
 
 # 카카오 REST API 키
 KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
-if not KAKAO_REST_API_KEY:
-    raise ValueError("KAKAO_REST_API_KEY 환경 변수가 설정되지 않았습니다.")
 
 # 카카오 Admin Key (unlink용)
 KAKAO_ADMIN_KEY = os.getenv("KAKAO_ADMIN_KEY")

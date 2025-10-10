@@ -6,6 +6,8 @@ from app.llm.sbert import encode  # 쿼리 임베딩
 from app.llm.kluebert import classify  # 감정 분류
 from app.utils.embeddings import load_embeddings  # {isbn13: vector}
 from app.utils.emotion_cache import get_isbns_for_emotion  # 감정별 ISBN 후보
+from app.core.schemas import RecommendItem, RecommendResponse
+
 
 # 🔧 유틸 모듈을 별칭으로 임포트해서 이름 충돌/섀도잉 방지
 import app.utils.firebase_util as fb

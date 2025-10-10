@@ -1,25 +1,37 @@
+# ---------- Virtual Environments ----------
 venv/
 .venv/
+env/
 myenv/
-scripts/kobart_finetuned/
-scripts/kobert-finetuned-emotion-v4/
-data/
-__pycache__/
-*.pyc
+
+# ---------- System / IDE ----------
 .vscode/
 .DS_Store
-models/
-models/**/*.pytorch_model.bin
-models/**/*.safetensors
-models/**/checkpoint-*
-models/**/optimizer.pt
-models/**/scheduler.pt
-models/**/tf_model.h5
-models/myenv/
-venv/
-.venv/
-models/kluebert-finetuned
-Backend/firebase_key.json
-firebase_key.json
-Backend/models/
+
+# ---------- Python Cache ----------
+__pycache__/
+*.pyc
+*.pyo
+
+# ---------- Environment & Logs ----------
 .env
+*.env
+*.log
+
+# ---------- Firebase & Secrets ----------
+firebase_key.json
+*serviceaccount*.json
+*firebase-adminsdk*.json
+
+# ---------- Data (현재 pkl/json만 존재, 전체 무시) ----------
+Backend/data/
+
+# ---------- Models (백엔드 내부용만 남김) ----------
+Backend/models/
+
+# ---------- Large Binary Files ----------
+*.pt
+*.bin
+*.pkl
+*.npy
+*.safetensors

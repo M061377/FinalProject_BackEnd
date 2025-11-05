@@ -2,19 +2,6 @@
 from typing import List, Optional
 
 
-class AnalyzeIn(BaseModel):
-    title: str = Field(..., description="책 제목")
-    fullDescription: str = Field(..., description="책 설명 전문")
-
-
-class AnalyzeOut(BaseModel):
-    title: str
-    summary: str
-    emotion: str
-    confidence: float
-    model: str
-
-
 class ErrorResponse(BaseModel):
     error: dict
 
